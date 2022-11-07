@@ -1,6 +1,6 @@
 import mdLinks from "./utils.js";
 console.log(
-  mdLinks("./directory2", {
+  mdLinks("./directory", {
     validate: false,
     stats: true,
   })
