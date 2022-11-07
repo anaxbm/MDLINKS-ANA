@@ -10,14 +10,30 @@ const extractingMdFiles = (files) => {
 };
 
 const extractingLinks = (absoluteRoute, mdFiles) => {
-  mdFiles.forEach((mdFile) => {
+  const arrayOfObjects = mdFiles.map((mdFile) => {
     const mdFileRoute = `${absoluteRoute}\\${mdFile}`;
     const contentOfMdFile = fs.readFileSync(mdFileRoute, "utf8");
-    const regularExpression = /https:\/\/[a-zA-Z\.\/]+/gm;
-    const links = contentOfMdFile.match(regularExpression);
-    console.log(contentOfMdFile);
-    return console.log(links);
+    const regexToMatchLinks =
+      /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/g;
+    const links = contentOfMdFile.match(regexToMatchLinks);
+    return { file: mdFileRoute, links: links }; //array of objects
   });
+  return arrayOfObjects; //array
+};
+
+const reorderData = (arrayOfLinksObjects) => {
+  const linksArray = [];
+  for (let i = 0; i < arrayOfLinksObjects.length; i++) {
+    arrayOfLinksObjects[i].links.forEach((link) => {
+      linksArray.push({
+        href: link,
+        text: "",
+        file: arrayOfLinksObjects[i].file,
+      });
+    });
+  }
+
+  return linksArray;
 };
 
 const mdLinks = (route, options) => {
@@ -28,8 +44,10 @@ const mdLinks = (route, options) => {
     //readdirSync lee los archivos de la ruta absolute & save in files
     const files = fs.readdirSync(absoluteRoute); //contain all files
     const mdFiles = extractingMdFiles(files);
-    extractingLinks(absoluteRoute, mdFiles);
-    return extractingMdFiles(files);
+    const arrayOfLinksObjects = extractingLinks(absoluteRoute, mdFiles);
+    const links = reorderData(arrayOfLinksObjects);
+
+    return links;
   } else {
     return "esta ruta no existe";
   }
